@@ -25,6 +25,14 @@
         valid-options (remove nil? (map #(find hashed-args (first %)) options))]
     (merge options (into {} (filter (comp some? val) valid-options)))))
 
+
+
+(defn clj-source-files [dirs]
+  (mapcat #(ns-find/find-sources-in-dir (io/file %) ns-find/clj) dirs))
+
+(defn dep-graph [dirs]
+  (ns-file/add-files {} (clj-source-files dirs)))
+
 (defn ns-dep-graph
   "Create a namespace dependency graph and save it as either ns-dep-graph or the supplied name."
   [project & args]
