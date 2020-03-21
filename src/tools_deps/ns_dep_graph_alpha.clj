@@ -6,13 +6,24 @@
 
 (def cli-opts
   [["-p" "--paths PATHS" "One or more directories separated by :"
-    :parse-fn #(str/split % #":")]])
+    :parse-fn #(str/split % #":")]
+   ["-v" "--verbose" "Print debug info"]])
 
-;; TODO: Read from deps.edn
+(defn jar? [s]
+  (str/ends-with? s ".jar"))
+
+(defn gitlib? [s]
+  (str/includes? s ".gitlibs"))
+
+(defn classpath []
+  (let [paths (-> (System/getProperty "java.class.path") (str/split #":"))]
+    (->> paths (remove jar?) (remove gitlib?))))
+
 ;; FIXME: https://github.com/hilverd/lein-ns-dep-graph/issues/3
 (defn -main [& args]
-  (let [{{:keys [paths]} :options} (cli/parse-opts args cli-opts)]
-    (lein.ns-dep/ns-dep-graph {:source-paths paths})
+  (let [{{:keys [paths verbose]} :options} (cli/parse-opts args cli-opts)]
+    (when verbose (println "Inferred paths:" (pr-str (classpath))))
+    (lein.ns-dep/ns-dep-graph {:source-paths (or paths (classpath))})
     (shutdown-agents)))
 
 (comment
