@@ -19,13 +19,12 @@
   (let [paths (-> (System/getProperty "java.class.path") (str/split #":"))]
     (->> paths (remove jar?) (remove gitlib?))))
 
-;; FIXME: https://github.com/hilverd/lein-ns-dep-graph/issues/3
+(defn print-paths [paths]
+  (println "Paths:" (pr-str (vec paths))))
+
 (defn -main [& args]
-  (let [{{:keys [paths verbose]} :options} (cli/parse-opts args cli-opts)]
-    (when verbose (println "Inferred paths:" (pr-str (classpath))))
-    (lein.ns-dep/ns-dep-graph {:source-paths (or paths (classpath))})
+  (let [{{:keys [paths verbose]} :options} (cli/parse-opts args cli-opts)
+        ps                                 (or paths (classpath))]
+    (when verbose (print-paths ps))
+    (lein.ns-dep/ns-dep-graph {:source-paths ps})
     (shutdown-agents)))
-
-(comment
-
-  )
