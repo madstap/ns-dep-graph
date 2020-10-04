@@ -2,9 +2,7 @@
   (:require
    [clojure.java.shell :as sh]
    [clojure.java.io :as io]
-   [clojure.math.combinatorics :as combo]
    [leiningen.ns-dep-graph :as lein.ns-dep]
-   [clojure.java.io :as io]
    [clojure.pprint :refer [pprint]]
    [clojure.tools.namespace.find :as ns.find]
    [clojure.tools.namespace.track :as ns.track]
@@ -13,7 +11,6 @@
    [clojure.tools.namespace.parse :as ns.parse]
    [clojure.tools.cli :as cli]
    [clojure.string :as str]
-   [clojure.set :as set]
    [rhizome.viz :as viz]
    [rhizome.dot :as dot])
   (:import (java.util.jar JarFile)
@@ -133,11 +130,6 @@
 
 (defn ns-tracker [files]
   (->> files (map :path) (ns.file/add-files {})))
-
-;; Is this needed? If the
-(defn project-ns? [platform ns]
-  (-> (into #{} (map :name) (project-files platform))
-      (contains? ns)))
 
 (defn p< [x]
   (doto x println))
