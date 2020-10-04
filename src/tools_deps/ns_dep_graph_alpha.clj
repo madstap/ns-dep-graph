@@ -134,7 +134,11 @@
 (defn p< [x]
   (doto x println))
 
-(defn gen-dot [{:keys [deps foreign platform] :as options}]
+;; TODO: Better name
+(defn- invert [x]
+  (when-let [ret (not x)] ret))
+
+(defn gen-dot [{:keys [deps foreign platform hide-aliases] :as options}]
   (let [depg (project-dep-graph platform)
         node->data (index-by :name (all-sources platform))
         include? #(or foreign (:project? (node->data %)))]
@@ -153,7 +157,8 @@
                              )))
      :edge->descriptor (fn [src dest]
                          (let [{:keys [aliases]} (node->data src)]
-                           {:label (some-> aliases (get dest) pr-str)})))))
+                           (assert (or (nil? hide-aliases) (true? hide-aliases)))
+                           {:label (and (invert hide-aliases) (some-> aliases (get dest) pr-str))})))))
 
 
 (defn ->kw [s]
@@ -174,7 +179,9 @@
     :default :clj
     :parse-fn ->kw
     :validate [#{:clj :cljs} "Either :clj or :cljs"]]
-   ["-o" "--output FILE" "Output path"]])
+   ["-o" "--output FILE" "Output path"]
+   ;; What should be the default here?
+   ["-a" "--hide-aliases" "Don't label aliases on edges"]])
 
 (defn extension [s]
   (second (re-find #"\.([a-zA-Z]+)$" s)))
@@ -212,6 +219,6 @@
 
   (-main "-o" "foo.png" #_"-f")
 
-  (-main "-o" "bar.png" "-f")
+  (-main "-o" "bar.png" #_"-f" "-a")
 
   )
